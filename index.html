@@ -8,7 +8,6 @@
         :root {
             --primary: #002f6c;
             --accent: #ff6b00;
-            --some-color: #25d366;
             --bg: #f4f7f6;
             --text: #333;
         }
@@ -44,6 +43,12 @@
                 const container = document.getElementById('sisalto');
                 
                 data.forEach((leike, index) => {
+                    // KORJATTU: Jos data.json on vanha eikä 'some' kenttää ole, luodaan automaattinen varateksti
+                    let lopullinenSome = leike.some;
+                    if (!lopullinenSome || lopullinenSome === "undefined") {
+                        lopullinenSome = `🏒 UUTTA MATERIAALIA LIIGAN KANAVALTA! 🔥 Uunituore video julkaistu otsikolla: ${leike.otsikko}! 🚨 Tsekkaa täysi selostus nettisivuiltamme ja ota kooste haltuun suoraan linkistä! 📺👇 ${leike.url} #Liiga #Jääkiekko #Kooste`;
+                    }
+
                     const div = document.createElement('div');
                     div.className = 'kortti';
                     div.innerHTML = `
@@ -55,7 +60,7 @@
                         <div class="tekstilaatikko">${leike.juonto}</div>
                         
                         <h3>📱 Valmis somepäivitys (TikTok / Insta / X):</h3>
-                        <div class="tekstilaatikko some-laatikko" id="some-${index}">${leike.some}</div>
+                        <div class="tekstilaatikko some-laatikko" id="some-${index}">${lopullinenSome}</div>
                     `;
                     container.appendChild(div);
                 });
