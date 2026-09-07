@@ -1,104 +1,39 @@
-import os
-import json
-import requests
-from googleapiclient.discovery import build
-from huggingface_hub import InferenceClient
+name: Paivita Liiga Koosteet
 
-# Haetaan avaimet turvallisesti GitHubin muistista
-YOUTUBE_API_KEY = os.environ.get("YOUTUBE_API_KEY")
-HF_API_KEY = os.environ.get("HF_API_KEY")
+on:
+  schedule:
+    # Tämä ajaa koodin joka ilta klo 22:00 Suomen aikaa (klo 19:00 UTC)
+    - cron: '0 19 * * *'
+  workflow_dispatch: # Tämä sallii sinun käynnistää päivityksen myös käsin napista
 
-# Käynnistetään YouTube-yhteys
-try:
-    youtube = build('youtube', 'v3', developerKey=YOUTUBE_API_KEY)
-except Exception as e:
-    print(f"Kriittinen virhe YouTube-yhteyden alustuksessa: {e}")
-    youtube = None
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # Varmistaa oikeuden tallentaa data.json takaisin
+    steps:
+    - name: Haetaan koodi
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0 # Hakee koko historian, jotta push ei epäonnistu
 
-# Luodaan tekoälyasiakas
-client = InferenceClient(token=HF_API_KEY)
+    - name: Asennetaan Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.12'
 
-# Liigan virallinen oma YouTube-kanava ID
-LIIGA_CHANNEL_ID = "UCGxrUE2U-ncnBf4vDww-gAQ" 
+    - name: Asennetaan tarvittavat kirjastot
+      run: |
+        pip install google-api-python-client huggingface_hub
 
-def hae_uusimmat_liiga_videot():
-    if not youtube:
-        return []
-    try:
-        request = youtube.search().list(
-            part="snippet", 
-            channelId=LIIGA_CHANNEL_ID, 
-            maxResults=5, 
-            order="date", 
-            type="video"
-        )
-        response = request.execute()
-        liiga_videot = []
-        for item in response.get("items", []):
-            # Varmistetaan että kyseessä on varmasti video ja id löytyy
-            if "id" in item and "videoId" in item["id"]:
-                title = item["snippet"].get("title", "Liiga-video")
-                video_id = item["id"]["videoId"]
-                liiga_videot.append({
-                    "otsikko": title,
-                    "url": f"https://youtube.com{video_id}",
-                    "kuvaus": item["snippet"].get("description", "")
-                })
-        return liiga_videot
-    except Exception as e:
-        print(f"Virhe YouTube-haussa: {e}")
-        return []
+    - name: Ajetaan Liiga-skripti
+      env:
+        YOUTUBE_API_KEY: ${{ secrets.YOUTUBE_API_KEY }}
+        HF_API_KEY: ${{ secrets.HF_API_KEY }}
+      run: python app.py
 
-def generoi_juonto_ilmaiseksi(video_url, videon_kuvaus):
-    prompt = f"""Tehtäväsi on luoda innostunut suomenkielinen ottelukooste jääkiekon Liiga-ottelusta.
-    Videon linkki: {video_url}
-    Videon kuvausteksti avuksi: {videon_kuvaus}
-    
-    Luo lyhyt teksti, jossa on:
-    1. Lyhyt alkujuonto.
-    2. Aikaleimat (esim. 01:23) tärkeistä tilanteista ranskalaisilla viivoilla.
-    3. Lyhyt loppuyhteenveto.
-    Vastaa pelkällä suomenkielisellä koosteella ilman alkutekstejä."""
-
-    try:
-        messages = [{"role": "user", "content": prompt}]
-        response = client.chat.completions.create(
-            model="Qwen/Qwen2.5-72B-Instruct",
-            messages=messages,
-            max_tokens=500,
-            temperature=0.7
-        )
-        if response and response.choices:
-            return response.choices[0].message.content.strip()
-        return "Juonnon luominen epäonnistui: Tyhjä vastaus tekoälyltä."
-    except Exception as e:
-        print(f"Virhe tekoälyssä videolle {video_url}: {e}")
-        return "Juonnon luominen epäonnistui teknisen virheen vuoksi."
-
-def aja_automaatio():
-    print("Haetaan uusia Liiga-videoita...")
-    videot = hae_uusimmat_liiga_videot()
-    if not videot:
-        print("Uusia Liiga-videoita ei löytynyt kanavalta juuri nyt.")
-        return
-        
-    valmiit_leikkeet = []
-    for video in videot:
-        print(f"Luodaan ilmainen juonto videolle: {video['otsikko']}")
-        juonto = generoi_juonto_ilmaiseksi(video["url"], video["kuvaus"])
-        valmiit_leikkeet.append({
-            "otsikko": video["otsikko"], 
-            "url": video["url"], 
-            "juonto": juonto
-        })
-    
-    # Tallennetaan tiedostoon
-    try:
-        with open('data.json', 'w', encoding='utf-8') as f:
-            json.dump(valmiit_leikkeet, f, ensure_ascii=False, indent=4)
-        print("Valmista! data.json päivitetty.")
-    except Exception as e:
-        print(f"Virhe JSON-tallennuksessa: {e}")
-
-if __name__ == "__main__":
-    aja_automaatio()
+    - name: Tallennetaan uudet koosteet sivustolle automaattisesti
+      uses: stefanzweifel/git-auto-commit-action@v5
+      with:
+        commit_message: "Automaattinen Liiga-päivitys (data.json)"
+        file_pattern: 'data.json'
