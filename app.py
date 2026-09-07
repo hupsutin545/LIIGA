@@ -3,9 +3,9 @@ import json
 from googleapiclient.discovery import build
 from huggingface_hub import InferenceClient
 
-# 1. Syötetään antamasi ilmaiset avaimet suoraan koodiin
-YOUTUBE_API_KEY = "AIzaSyCzqFkntOh2A7ZaWfaCQPoeMU1V5DFh14k"
-HF_API_KEY = "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"
+# Haetaan avaimet turvallisesti GitHubin muistista (Repository Secrets)
+YOUTUBE_API_KEY = os.environ.get("YOUTUBE_API_KEY")
+HF_API_KEY = os.environ.get("HF_API_KEY")
 
 # Käynnistetään YouTube-yhteys
 youtube = build('youtube', 'v3', developerKey=YOUTUBE_API_KEY)
@@ -57,7 +57,7 @@ def generoi_juonto_ilmaiseksi(video_url, videon_kuvaus):
     try:
         messages = [{"role": "user", "content": prompt}]
         
-        # Korjattu .completions.create toimivaksi
+        # KORJATTU: Käytetään oikeaa chat.completions.create -rakennetta
         response = client.chat.completions.create(
             model="Qwen/Qwen2.5-72B-Instruct",
             messages=messages,
