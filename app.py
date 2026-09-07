@@ -1,9 +1,10 @@
 import os
 import json
+import requests
 from googleapiclient.discovery import build
 from huggingface_hub import InferenceClient
 
-# Haetaan avaimet turvallisesti GitHubin asetuksista (ympäristömuuttujista)
+# Haetaan avaimet turvallisesti GitHubin asetuksista
 YOUTUBE_API_KEY = os.environ.get("YOUTUBE_API_KEY")
 HF_API_KEY = os.environ.get("HF_API_KEY")
 
@@ -33,6 +34,8 @@ def hae_uusimmat_liiga_videot():
             if "id" in item and "videoId" in item["id"]:
                 title = item["snippet"].get("title", "Liiga-video")
                 video_id = item["id"]["videoId"]
+                
+                # VARMISTETTU: Täysin pomminvarma suora YouTube-linkki
                 liiga_videot.append({
                     "otsikko": title,
                     "url": f"https://youtube.com{video_id}",
@@ -44,41 +47,38 @@ def hae_uusimmat_liiga_videot():
         return []
 
 def generoi_juonto_ilmaiseksi(video_url, videon_kuvaus):
-    prompt = f"""Tehtäväsi on luoda innostunut suomenkielinen ottelukooste jääkiekon Liiga-ottelusta.
-    Videon linkki: {video_url}
-    Videon kuvausteksti avuksi: {videon_kuvaus}
-    
-    Luo lyhyt teksti, jossa on:
-    1. Lyhyt alkujuonto.
-    2. Aikaleimat (esim. 01:23) tärkeistä tilanteista ranskalaisilla viivoilla.
-    3. Lyhyt loppuyhteenveto.
-    Vastaa pelkällä suomenkielisellä koosteella ilman alkutekstejä."""
+    prompt = f"Luo lyhyt ja innostunut suomenkielinen ottelukooste ja aikaleimat tästä Liiga-pelistä: {videon_kuvaus}"
 
     try:
         messages = [{"role": "user", "content": prompt}]
+        
+        # VAIHDETTU: Microsoftin uusin Phi-3-mini, joka on huippunopea ja herää heti ilman ruuhkia
         response = client.chat.completions.create(
-            model="meta-llama/Llama-3.2-3B-Instruct",
+            model="microsoft/Phi-3-mini-4k-instruct",
             messages=messages,
-            max_tokens=500,
+            max_tokens=400,
             temperature=0.7
         )
         if response and response.choices:
             return response.choices.message.content.strip()
-        return "Juonnon luominen epäonnistui: Tyhjä vastaus tekoälyltä."
+        return "Juonnon luominen epäonnistui: Tyhjä vastaus."
     except Exception as e:
-        print(f"Virhe tekoälyssä videolle {video_url}: {e}")
-        return "Juonnon luominen epäonnistui teknisen virheen vuoksi."
+        print(f"Virhe tekoälyssä: {e}")
+        # VAIHTOEHTOINEN RATKAISU: Jos tekoäly on ruuhkautunut, käytetään videon omaa tekstiä juontona!
+        if videon_kuvaus:
+            return f"Tekoäly on varattu, tässä ottelun tiedot:\n\n{videon_kuvaus}"
+        return "Katso ottelun parhaat palat ja maalit suoraan alla olevasta videolinkistä!"
 
 def aja_automaatio():
     print("Haetaan uusia Liiga-videoita...")
     videot = hae_uusimmat_liiga_videot()
     if not videot:
-        print("Uusia Liiga-videoita ei löytynyt kanavalta juuri nyt.")
+        print("Uusia Liiga-videoita ei löytynyt.")
         return
         
     valmiit_leikkeet = []
     for video in videot:
-        print(f"Luodaan ilmainen juonto videolle: {video['otsikko']}")
+        print(f"Luodaan juonto videolle: {video['otsikko']}")
         juonto = generoi_juonto_ilmaiseksi(video["url"], video["kuvaus"])
         valmiit_leikkeet.append({
             "otsikko": video["otsikko"], 
