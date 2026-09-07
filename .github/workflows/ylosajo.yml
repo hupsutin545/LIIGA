@@ -1,0 +1,34 @@
+name: Paivita Liiga Koosteet
+
+on:
+  schedule:
+    # Tämä ajaa koodin joka ilta klo 22:00 Suomen aikaa (klo 19:00 UTC)
+    - cron: '0 19 * * *'
+  workflow_dispatch: # Tämä sallii sinun käynnistää päivityksen myös käsin napista
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Haetaan koodi
+      uses: actions/checkout@v4
+
+    - name: Asennetaan Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.12'
+
+    - name: Asennetaan tarvittavat kirjastot
+      run: |
+        pip install google-api-python-client huggingface_hub
+
+    - name: Ajetaan Liiga-skripti
+      run: python app.py
+
+    - name: Tallennetaan uudet koosteet sivustolle
+      run: |
+        git config --global user.name "GitHub Action"
+        git config --global user.email "action@github.com"
+        git add data.json
+        git commit -m "Automaattinen Liiga-päivitys" || exit 0
+        git push
