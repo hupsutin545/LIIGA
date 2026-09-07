@@ -8,131 +8,67 @@
         :root {
             --primary: #002f6c;
             --accent: #ff6b00;
+            --some-color: #25d366;
             --bg: #f4f7f6;
             --text: #333;
         }
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: var(--bg);
-            color: var(--text);
-            margin: 0;
-            padding: 0;
-        }
-        .header {
-            background-color: var(--primary);
-            color: white;
-            text-align: center;
-            padding: 40px 20px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-        }
-        .header h1 {
-            margin: 0;
-            font-size: 2.5rem;
-        }
-        .header p {
-            margin: 10px 0 0 0;
-            opacity: 0.8;
-        }
-        .container {
-            max-width: 900px;
-            margin: 40px auto;
-            padding: 0 20px;
-        }
-        .kortti {
-            background: white;
-            border-radius: 12px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
-            padding: 30px;
-            margin-bottom: 35px;
-            border-top: 5px solid var(--accent);
-            transition: transform 0.2s;
-        }
-        .kortti:hover {
-            transform: translateY(-2px);
-        }
-        .kortti h2 {
-            margin-top: 0;
-            color: var(--primary);
-            font-size: 1.6rem;
-        }
-        .nappi {
-            display: inline-block;
-            background-color: var(--accent);
-            color: white;
-            text-decoration: none;
-            padding: 10px 20px;
-            border-radius: 6px;
-            font-weight: bold;
-            margin-bottom: 20px;
-            font-size: 0.95rem;
-        }
-        .nappi:hover {
-            background-color: #e05e00;
-        }
-        .juonto-alue {
-            background: #f9fbfb;
-            border-left: 4px solid var(--primary);
-            padding: 20px;
-            border-radius: 4px;
-            line-height: 1.6;
-            font-size: 1.05rem;
-            white-space: pre-wrap;
-        }
-        #lataus {
-            text-align: center;
-            font-size: 1.2rem;
-            color: #666;
-            margin-top: 50px;
-        }
+        body { font-family: 'Segoe UI', sans-serif; background-color: var(--bg); color: var(--text); margin: 0; padding: 0; }
+        .header { background-color: var(--primary); color: white; text-align: center; padding: 30px 20px; }
+        .container { max-width: 900px; margin: 30px auto; padding: 0 20px; }
+        .kortti { background: white; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); padding: 25px; margin-bottom: 30px; border-top: 5px solid var(--accent); }
+        .kortti h2 { margin-top: 0; color: var(--primary); }
+        .nappi { display: inline-block; background-color: var(--accent); color: white; text-decoration: none; padding: 10px 15px; border-radius: 6px; font-weight: bold; margin-bottom: 15px; margin-right: 10px; cursor: pointer; border: none; font-size: 0.9rem; }
+        .nappi.some-nappi { background-color: #111; }
+        .tekstilaatikko { background: #f9fbfb; border-left: 4px solid var(--primary); padding: 15px; border-radius: 4px; white-space: pre-wrap; margin-bottom: 15px; font-size: 1rem; }
+        .some-laatikko { border-left-color: #ff0050; background: #fff5f7; font-style: italic; }
+        #lataus { text-align: center; font-size: 1.2rem; color: #666; margin-top: 50px; }
     </style>
 </head>
 <body>
 
     <div class="header">
-        <h1>🏒 Liiga Tekoäly-Selostaja</h1>
-        <p>Automaattiset ottelukoosteet, juonnot ja aikaleimat suoraan Liigan viralliselta kanavalta</p>
+        <h1>🏒 Liiga Tekoäly-Selostaja & Somettaja</h1>
+        <p>Äänitysvalmiit radioselostukset ja kopioitavat somepostaukset sekunneissa</p>
     </div>
 
     <div class="container">
-        <div id="lataus">Ladataan uusimpia ottelukoosteita...</div>
+        <div id="lataus">Ladataan uusimpia materiaaleja...</div>
         <div id="sisalto"></div>
     </div>
 
     <script>
-        // Ladataan Pythonin luoma data.json tiedosto
         fetch('data.json')
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error('Datan lataus epäonnistui');
-                }
-                return response.json();
-            })
+            .then(res => res.json())
             .then(data => {
-                const latausElementti = document.getElementById('lataus');
-                latausElementti.style.display = 'none'; // Piilotetaan latausteksti
-                
+                document.getElementById('lataus').style.display = 'none';
                 const container = document.getElementById('sisalto');
                 
-                if (data.length === 0) {
-                    container.innerHTML = '<p style="text-align:center;">Ei koosteita saatavilla juuri nyt.</p>';
-                    return;
-                }
-
-                data.forEach(leike => {
+                data.forEach((leike, index) => {
                     const div = document.createElement('div');
                     div.className = 'kortti';
                     div.innerHTML = `
                         <h2>${leike.otsikko}</h2>
-                        <a href="${leike.url}" target="_blank" class="nappi">📺 Katso alkuperäinen video YouTubessa</a>
-                        <div class="juonto-alue">${leike.juonto}</div>
+                        <a href="${leike.url}" target="_blank" class="nappi">📺 Katso YouTube-video</a>
+                        <button class="nappi some-nappi" onclick="kopioiTeksti('some-${index}')">📋 Kopioi somepostaus</button>
+                        
+                        <h3>🎙️ 2 minuutin puhekäsikirjoitus äänitykseen:</h3>
+                        <div class="tekstilaatikko">${leike.juonto}</div>
+                        
+                        <h3>📱 Valmis somepäivitys (TikTok / Insta / X):</h3>
+                        <div class="tekstilaatikko some-laatikko" id="some-${index}">${leike.some}</div>
                     `;
                     container.appendChild(div);
                 });
-            })
-            .catch(err => {
-                document.getElementById('lataus').innerText = 'Virhe ladattaessa koosteita. Varmista, että olet ajanut app.py skriptin ensin!';
-                console.error(err);
             });
+
+        function kopioiTeksti(elementId) {
+            const teksti = document.getElementById(elementId).innerText;
+            navigator.clipboard.writeText(teksti).then(() => {
+                alert("Somepostaus kopioitu leikepöydälle! Voit nyt liittää sen suoraan someen. 🔥");
+            }).catch(err => {
+                console.error("Kopiointi epäonnistui: ", err);
+            });
+        }
     </script>
 </body>
 </html>
