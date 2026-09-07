@@ -13,7 +13,7 @@ except Exception as e:
 
 LIIGA_CHANNEL_ID = "UCGxrUE2U-ncnBf4vDww-gAQ" 
 
-def luo_tarkka_liiga_raportti(title):
+def luo_tarkka_liiga_raportti(title, video_url):
     title_lower = title.lower()
     
     # 1. TPS – HIFK
@@ -25,9 +25,10 @@ Turkulaisten tehomiehinä häärivät Lukas Wernblom, joka mätti tehot 1+3, sek
 
 Mutta pelkkään maali-iloitteluun ei ilta päättynyt. Ottelun lopussa tunteet räiskyivät kunnolla yli: HIFK:n Eetu Liukas ja TPS:n Axel Landén tiputtivat hanskat ja aloittivat nyrkkitappelun! Liukan sai tästä yhden ottelun pelikiellon. TPS otti täydet pisteet ja jätti HIFK:lle paljon opittavaa. Katso kooste alta!" """
         
-        some = """🏒🔥 GATORADE CENTER RÄJÄHTI! TPS murjoi HIFK:n tylysti 5–1! 😱 Lukas Wernblom täysin pitelemätön tehoilla 1+3 ja siirtyi samalla Liigan pistepörssin KÄRKEEN! 👑 Nuori Aatos Koivu painoi aivan jäätävän KABOOM-ylivoimahakin verkkoon! 💥 
+        # LISÄTTY: {video_url} suoraan tekstin sekaan
+        some = f"""🏒🔥 GATORADE CENTER RÄJÄHTI! TPS murjoi HIFK:n tylysti 5–1! 😱 Lukas Wernblom täysin pitelemätön tehoilla 1+3 ja siirtyi samalla Liigan pistepörssin KÄRKEEN! 👑 Nuori Aatos Koivu painoi aivan jäätävän KABOOM-ylivoimahakin verkkoon! 💥 
 
-Eikä tässä kaikki – loppusekunneilla tunteet kiehahti huolella yli ja Eetu Liukas sekä Axel Landén ottivat tulisen nyrkkirallin! 🥊 Liukkaalle tästä 1 ottelun pelikielto! Ota seuranta haltuun ja tsekkaa matsin kooste biisin linkistä! 📺👇 #Liiga #TPS #HIFK #Jääkiekko #Nyrkkiralli #AatosKoivu"""
+Eikä tässä kaikki – loppusekunneilla tunteet kiehahti huolella yli ja Eetu Liukas sekä Axel Landén ottivat tulisen nyrkkirallin! 🥊 Liukkaalle tästä 1 ottelun pelikielto! Tsekkaa matsin virallinen kooste tästä: {video_url} 📺👇 #Liiga #TPS #HIFK #Jääkiekko #Nyrkkiralli #AatosKoivu"""
         
         return selostus, some
 
@@ -36,13 +37,14 @@ Eikä tässä kaikki – loppusekunneilla tunteet kiehahti huolella yli ja Eetu 
         selostus = """🎙️ [KESTO: 2 MINUUTTIA]
 "Kiekkokansa huomio, mennään Raumalle! Äijänsuon lehterät olivat äärirajoillaan, kun Lukko ja pitkän tauon jälkeen Liigaan palannut Helsingin Jokerit iskivät yhteen! Liiga.fi:n viralliset ottelutiedot kertovat kuitenkin karua kieltä: Jokereiden juhlista tuli Raumalla täydellinen selkäsauna.
 
-Lukko murjoi taululle käsittämättömät 7–2-lukemat! Ottelun ykköstähtenä loisti Alex Beaucage, joka takoi tehot 1+2. Tämä oli Lukon suurin voitto Jokereista runkosarjassa sitten syyskuun 2009! Raumalaiset iskivät toisessa erässä peräti neljä osumaa Jokerien verkkoon, mikä lamautti vieraat täysin. Jokereiden Emil Kuusla ja Henri Nikkanen yrittivät herätellä joukkuetta kavennusmaaleilla kolmannessa erässä, mutta Lukko oli tällä kertaa aivan liian suvereeni. 
+Lukko murjoi taululle käsittämättömät 7–2-lukemat! Ottelun ykköstähtenä loisti Alex Beaucage, joka takoi tehot 1+2. This was Lukko's biggest regular season win against Jokerit since 2009! Raumalaiset iskivät toisessa erässä peräti neljä osumaa Jokerien verkkoon, mikä lamautti vieraat täysin. Jokereiden Emil Kuusla ja Henri Nikkanen yrittivät herätellä joukkuetta kavennusmaaleilla kolmannessa erässä, mutta Lukko oli tällä kertaa aivan liian suvereeni. 
 
 Ottelun lopussa nähtiin myös harvinainen reaktio, kun pettyneet jokerifanit ilmaisivat tyytymättömyytensä heiluttelemalla kenkiään katsomossa. Lukko otti ison päänahan, ja Jokerit sai herätyksen siitä, mitä Liigan huippuvauhti tällä kaudella vaatii. Katso tämä seitsemän maalin ralli kokonaisuudessaan suoraan alla olevasta linkistä!" """
         
-        some = """🤯 MITKÄ MURSKAJAISET RAUMALLA! Lukko tyrmäsi Jokerit käsittämättömin 7–2 lukemin Äijänsuon lauantai-illassa! 💥 Alex Beaucage herrana ja kuninkaana tehoilla 1+2! 🦊 Tämä oli historiallisesti Lukon suurin runkosarjavoitto Jokereista sitten vuoden 2009! 
+        # LISÄTTY: {video_url} suoraan tekstin sekaan
+        some = f"""🤯 MITKÄ MURSKAJAISET RAUMALLA! Lukko tyrmäsi Jokerit käsittämättömin 7–2 lukemin Äijänsuon lauantai-illassa! 💥 Alex Beaucage herrana ja kuninkaana tehoilla 1+2! 🦊 Tämä oli historiallisesti Lukon suurin runkosarjavoitto Jokereista sitten vuoden 2009! 
 
-Ottelun lopussa nähtiin myös aivan hämmentävä hetki, kun turhautuneet jokerifaneista alkoivat heilutella kenkiään katsomossa! 👟👀 Jokerit sai tylyn opetuksen Liigan kärkivauhdista. Katso kaikki 7 maalia videolta nyt! 📺👇 #Liiga #RaumanLukko #Jokerit #Murskajaiset #HelsinginJokerit #Lätkä"""
+Ottelun lopussa nähtiin myös aivan hämmentävä hetki, kun turhautuneet jokerifaneista alkoivat heilutella kenkiään katsomossa! 👟👀 Jokerit sai tylyn opetuksen Liigan kärkivauhdista. Katso kaikki 7 maalia suoraan täältä: {video_url} 📺👇 #Liiga #RaumanLukko #Jokerit #Murskajaiset #HelsinginJokerit #Lätkä"""
         
         return selostus, some
 
@@ -53,9 +55,10 @@ Ottelun lopussa nähtiin myös aivan hämmentävä hetki, kun turhautuneet joker
 
 Liiga.fi:n virallisten peliraporttien mukaan tässä ottelussa nähtiin todellista taistelua sarjapisteistä. Joukkueet lähtivät peliin tarkalla taktiikalla, ja ratkaisut haettiin erikoistilanteiden, ylivoimien sekä maalivahtien loistavien paraatipelastusten kautta. Liigassa pelataan tällä hetkellä äärimmäisen tasaisia otteluita, ja jokainen piste on matkalla kohti pudotuspelejä äärimmäisen kriittinen. Katso kooste alta!" """
         
-        some = f"""🏒 UUTTA MATERIAALIA KAUUKALOSTS! 🔥 Liigan viralliselle kanavalle tipahti juuri uusi video: {title}! 🚨 
+        # LISÄTTY: {video_url} suoraan tekstin sekaan
+        some = f"""🏒 UUTTA MATERIAALIA KAUKALOSRA! 🔥 Liigan viralliselle kanavalle tipahti juuri uusi video: {title}! 🚨 
 
-Kausi käy kuumempana kuin koskaan ja taistelu sarjapisteistä kiihtyy! Kumpi joukkue otti henkisen yliotteen ja kenen viisikkopeli vaatii vielä viilausta? 🧐 Käy lukemassa täysi otteluraportti sivuiltamme ja katso maalit videolta! 🎬👇 #Liiga #Jääkiekko #UrheiluUutiset #Kooste"""
+Kausi käy kuumempana kuin koskaan ja taistelu sarjapisteistä kiihtyy! Käy katsomassa ottelun viralliset maalit ja tilanteet tästä linkistä: {video_url} 🎬👇 #Liiga #Jääkiekko #UrheiluUutiset #Kooste"""
         
         return selostus, some
 
@@ -72,13 +75,14 @@ def hae_uusimmat_liiga_videot():
             if "id" in item and "videoId" in item["id"]:
                 title = item["snippet"].get("title", "Liiga-video")
                 video_id = item["id"]["videoId"]
+                video_url = f"https://youtube.com{video_id}"
                 
-                # Haetaan molemmat tekstiversiot generaattorista
-                puheteksti, some_teksti = luo_tarkka_liiga_raportti(title)
+                # Syötetään video_url nyt myös tekstigeneraattorille
+                puheteksti, some_teksti = luo_tarkka_liiga_raportti(title, video_url)
 
                 liiga_videot.append({
                     "otsikko": title,
-                    "url": f"https://youtube.com{video_id}",
+                    "url": video_url,
                     "juonto": puheteksti,
                     "some": some_teksti
                 })
@@ -88,7 +92,7 @@ def hae_uusimmat_liiga_videot():
         return []
 
 def aja_automaatio():
-    print("Luodaan selostukset ja some-päivitykset...")
+    print("Luodaan selostukset ja linkitetyt some-päivitykset...")
     videot = hae_uusimmat_liiga_videot()
     if not videot:
         return
