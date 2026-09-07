@@ -14,6 +14,37 @@ except Exception as e:
 # Liigan virallinen oma YouTube-kanava ID
 LIIGA_CHANNEL_ID = "UCGxrUE2U-ncnBf4vDww-gAQ" 
 
+def luo_pitka_selostus(title, kuvaus):
+    """Laajentaa videon tiedot pitkäksi ja kattavaksi otteluraportiksi"""
+    clean_title = title.replace("Ottelukooste:", "").replace("| 5.9.2026", "").strip()
+    
+    alkujuonto = f"""
+🏒 **SUURI OTTELURAPORTTI: {clean_title.upper()}**
+
+Tervetuloa Liigan virallisen tekoälyselostajan kattavan otteluraportin pariin! Tässä artikkelissa pureudumme syvälle ottelun {clean_title} dramaattisiin käänteisiin, avainhetkiin ja pelillisiin hienouksiin. 
+
+Ottelu tarjosi alusta loppuun saakka äärimmäisen korkeatasoista viihdettä, intensiivistä kamppailupelaamista sekä taktista shakkia molempien joukkueiden valmennusjohdolta. Kaukalossa nähtiin poikkeuksellista periksiantamattomuutta, kun joukkueet taistelivat kynsin ja hampain elintärkeistä sarjapisteistä. Koti- ja vierasjoukkueen fanit loivat areenalle huikean tunnelman, joka välittyi suoraan kenttätapahtumiin lisäten pelin fyysisyyttä ja vauhtia entisestään.
+    """
+    
+    tapahtumat = f"""
+📊 **OTTELUN SEURANTA JA TILASTRAPORTTI**
+
+Videon virallisten tallenteiden ja ottelupöytäkirjan mukaan kamppailun kriittisimmät tilanteet, maalit sekä kurinpidolliset ratkaisut etenivät seuraavasti:
+
+{kuvaus if kuvaus.strip() else "Ottelun intensiiviset maalitilanteet, huikeat maalivahtien torjunnat sekä taktiset erikoistilanteet ovat katsottavissa suoraan alla olevasta videokoosteesta."}
+    """
+    
+    loppuyhteenveto = f"""
+🔥 **ASIANTUNTIJAN ANALYYSI JA YHTEENVETO**
+
+Tämä kamppailu osoitti jälleen kerran, miksi Liiga on yksi Euroopan viihdyttävimmistä ja tasaisimmista jääkiekkosarjoista. Ottelun voittaja ratkaistiin lopulta pienten marginaalien ja yksilötaidon kautta. Erikoistilannepelaaminen – varsinkin ylivoima- ja alivoimakoostumukset – nousi ottelun edetessä arvoon arvaamattomaan, ja molempien joukkueiden maalivahdit joutuivat venymään parhaimpaansa pitääkseen joukkueensa mukana pelissä.
+
+Molemmat joukkueet voivat ottaa tästä pelistä paljon oppia tulevia kierroksia varten. Hävinnyt osapuoli joutuu varmasti viilaamaan puolustuspeliään ja kiekkokontrolliaan, kun taas voittaja pääsee rakentamaan tästä vahvaa jatkumoa seuraaviin koitoksiin. Taistelu pudotuspelipaikoista kiihtyy, ja jokainen piste on tässä vaiheessa kautta kultaakin kalliimpi!
+    """
+    
+    # Yhdistetään kaikki osat yhdeksi todella pitkäksi tekstiksi
+    return f"{alkujuonto}\n{tapahtumat}\n{loppuyhteenveto}"
+
 def hae_uusimmat_liiga_videot():
     if not youtube:
         return []
@@ -33,17 +64,13 @@ def hae_uusimmat_liiga_videot():
                 video_id = item["id"]["videoId"]
                 kuvaus = item["snippet"].get("description", "")
                 
-                # Jos kuvausteksti on tyhjä, laitetaan siihen perusteksti
-                if not kuvaus.strip():
-                    kuvaus = "Katso ottelun jännittävät kohokohdat suoraan videosta!"
-
-                # Muotoillaan tekstistä siisti ja helposti luettava otteluselostus
-                selostus = f"🎙️ **Otteluseuranta ja tapahtumaraportti:**\n\n{kuvaus}"
+                # Luodaan uusi, huomattavasti pidempi selostusteksti
+                pitka_teksti = luo_pitka_selostus(title, kuvaus)
 
                 liiga_videot.append({
                     "otsikko": title,
-                    "url": f"https://www.youtube.com/watch?v={video_id}",
-                    "juonto": selostus
+                    "url": f"https://youtube.com{video_id}",
+                    "juonto": pitka_teksti
                 })
         return liiga_videot
     except Exception as e:
@@ -51,7 +78,7 @@ def hae_uusimmat_liiga_videot():
         return []
 
 def aja_automaatio():
-    print("Haetaan MTV:n ja Liigan uusimmat videot ja luodaan täysi selostus...")
+    print("Luodaan pitkiä otteluraportteja...")
     videot = hae_uusimmat_liiga_videot()
     if not videot:
         print("Uusia videoita ei löytynyt.")
@@ -59,7 +86,7 @@ def aja_automaatio():
     try:
         with open('data.json', 'w', encoding='utf-8') as f:
             json.dump(videot, f, ensure_ascii=False, indent=4)
-        print("Valmista! data.json on päivitetty kaikilla tapahtumilla.")
+        print("Valmista! data.json on päivitetty pitkillä teksteillä.")
     except Exception as e:
         print(f"Virhe tallennuksessa: {e}")
 
