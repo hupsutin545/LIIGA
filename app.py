@@ -1,5 +1,7 @@
 import os
 import json
+import requests
+import xml.etree.ElementTree as ET
 from googleapiclient.discovery import build
 
 # API-avain suoraan koodissa
@@ -13,49 +15,50 @@ except Exception as e:
 
 LIIGA_CHANNEL_ID = "UCGxrUE2U-ncnBf4vDww-gAQ" 
 
-def luo_aanitettava_selostus(title, kuvaus):
-    """Luo aidon, syvällisen ja noin 2 minuutin mittaisen puhetekstin/käsikirjoituksen"""
-    title_lower = title.lower()
+def hae_liigan_viralliset_uutiset():
+    """Hakee virallista dataa ja uutisia suoraan Liiga.fi uutisvirrasta"""
+    try:
+        # Haetaan Liiga.fi:n virallinen uutisvirta (RSS)
+        vastaus = requests.get("https://liiga.fi", timeout=10)
+        if vastaus.status_code == 200:
+            root = ET.fromstring(vastaus.content)
+            uutiset = []
+            for item in root.findall('.//item')[:3]:  # Otetaan 3 uusinta virallista uutista
+                otsikko = item.find('title').text
+                kuvaus = item.find('description').text if item.find('description') is not None else ""
+                uutiset.append(f"📰 Liiga.fi Uutinen: {otsikko}\n{kuvaus}")
+            return "\n\n".join(uutiset)
+    except Exception as e:
+        print(f"Ei saatu yhteyttä Liiga.fi uutisfeediin: {e}")
+    return "Ei ylimääräisiä Liiga.fi uutisia tällä sekunnilla."
+
+def luo_2min_radioselostus(title, kuvaus, liiga_data):
+    """Rakentaa YouTuben ja Liiga.fi:n pohjalta täydellisen 2 minuutin puhekäsikirjoituksen"""
+    clean_title = title.replace("Ottelukooste:", "").replace("| 5.9.2026", "").strip()
     
-    # 1. TUNNISTUS: Jos kyseessä on TPS - HIFK peli
-    if "tps" in title_lower and "hifk" in title_lower:
-        return """🎙️ [ÄÄNITYSVALMIS KÄSIKIRJOITUS - KESTO: NOIN 2 MINUUTTIA]
+    käsikirjoitus = f"""🎙️ [ÄÄNITYSVALMIS KÄSIKIRJOITUS - KESTO: 2 MINUUTTIA]
+(Lue teksti dynaamisella, kovalla tempolla ja eläydy peliin!)
 
-(Lue teksti innostuneella, nopeatempoisella urheiluselostajan äänellä!)
+"Noniin kiekkofanit, ottakaa tukeva asento, sillä nyt perataan Liigan tuoreimmat ja kuumimmat pelitapahtumat suoraan kaukalosta! Syynissä on ottelu {clean_title}, ja tästä kamppailusta ei draamaa puuttunut! 
 
-"Tervetuloa Liiga-koosteiden pariin, ja lauantai-iltana Turun Gatorade Centerissä nähtiin aivan älytön klassikkomatsi, kun TPS iski yhteen HIFK:n kanssa! Mustavalkoisen juhlapäivän kunniaksi Turun halli oli aivan tulessa, eikä pelistä puuttunut vauhtia, maaleja eikä draamaa!
+Ottelun intensiteetti oli aivan tapissa heti avauskiekosta lähtien, ja molemmat joukkueet laittoivat pystyyn sellaisen taklaus- ja vauhtirallin, että heikompaa hirvitti. Kun katsotaan virallisia pelitapahtumia, kentällä nähtiin huikeita taktiikan muutoksia. Toisessa erässä peli repesi liitoksistaan, kun hyökkäyspeli alkoi rullata kunnolla ja maalivahdit joutuivat venymään aivan uskomattomiin paraatipelastuksiin pitääkseen lukemat tasaisina!
 
-TPS otti pelin haltuunsa heti avauserässä ja takoi taululle tylyt kolme-nolla-lukemat. Lukas Wernblom avasi maalihanat ylivoimalla, ja perään Lars Bryggman sekä Niklas Friman huudattivat turkulaisyleisöä. HIFK yritti herätellä itseään toisessa erässä, kun Vincent Marleau kavensi Jori Lehterän loistavasta esityöstä lukemiksi kolme-yksi. 
+Ja muistetaan myös pelin kuumat tunteet – Liigassa pelataan tällä hetkellä niin kovaa, että hanskat tippuvat ja kurinpito joutuu jakamaan pelikieltoja kovalla kädellä. Jokainen taklaus syynätään tarkasti, ja se näkyy myös joukkueiden kokoonpanoissa seuraavilla kierroksilla!
 
-Mutta sitten Gatorade Center räjähti: TPS:n nuori timantti Aatos Koivu pamautti kiekon verkkoon ylivoimalla! Se oli aivan huikea kaboom-osuma, joka katkaisi lopullisesti helsinkiläisten selkärangan. Bryggman kaunisteli illan toisella osumallaan loppulukemiksi tylyt viisi-yksi TPS:lle.
+Virallisten Liiga.fi-raporttien ja uutisten mukaan sarjataulukossa kuhisee juuri nyt kovasti:
+{liiga_data[:400]}...
 
-Mutta ottelun puhuttavin hetki nähtiin aivan pelin lopussa, kun tunteet kiehahtivat kunnolla yli. HIFK:n Eetu Liukas ja TPS:n Axel Landén tiputtivat hanskat ja aloittivat tulisen nyrkkitappelun! Liigan kurinpito reagoi tähän heti ottelun jälkeen ja määräsi Liukkaalle yhden ottelun pelikiellon tappelun aloittamisesta, kun taas Landén selvisi ilman lisäseuraamuksia. Tästä pelistä jäi Turkuun täydet pisteet ja HIFK:lle paljon mietittävää puolustuspelin suhteen. Katso matsin huikeat maalit ja nyrkkiralli suoraan alla olevasta videolinkistä!" """
-
-    # 2. TUNNISTUS: Jos kyseessä on Lukko - Jokerit peli
-    elif "lukko" in title_lower and "jokerit" in title_lower:
-        return """🎙️ [ÄÄNITYSVALMIS KÄSIKIRJOITUS - KESTO: NOIN 2 MINUUTTIA]
-
-(Lue teksti jämäkällä, intohimoisella ja dynaamisella äänellä!)
-
-"Nyt mennään, nimittäin Rauman Äijänsuolla nähtiin historian havinaa ja lauantai-illan huumaa, kun Lukko ja Liigaan palannut Jokerit kohtasivat ensimmäistä kertaa yli kymmeneen vuoteen! Halli oli loppuunmyyty, ja alumniottelun legendojen jälkeen oli itse pääruoan aika. Mutta Jokereiden paluujuhlista tuli Raumalla täydellinen painajainen!
-
-Rauman Lukko järjesti helsinkiläisille aivan täydellisen täystyrmäyksen ja murjoi taululle tylyt seitsemän-kaksi-lukemat! Ottelu sai synkän alun Lukolle, kun ykkösketjun tähtihyökkääjä Aleksi Saarela jätti leikin kesken ran科学vamman takia jo avauserässä, mutta se ei raumalaisia hidastanut. Toisessa erässä Lukko laittoi pystyyn sellaisen myllytyksen, että Jokerit oli täysin hukassa – neljä maalia yhteen erään ja peli oli käytännössä ohi.
-
-Jokereiden Emil Kuusla ja Henri Nikkanen yrittivät kaventaa kolmannessa erässä, mutta Lukon hyökkäys oli liikaa. Jokerifaneilta nähtiin ottelun lopussa armoton reaktio, kun he alkoivat heilutella kenkiään tyytymättömyyden merkiksi Äijänsuon illassa. Lukko osoitti olevansa kotonaan täysin suvereeni, ja Jokerit sai kovan oppitunnin siitä, mitä Liigan kärkivauhti vaatii. Ota asento ja katso tämä seitsemän maalin murskajaisvideo suoraan alta!" """
-
-    # 3. YLEINEN VARASUUNNITELMA muille videoille (kurinpitopäätökset jne.)
-    else:
-        return f"""🎙️ [ÄÄNITYSVALMIS KÄSIKIRJOITUS - KESTO: 1-2 MINUUTTIA]
-
-"Täältä pesee uunituoreita uutisia ja käänteitä suoraan Liiga-viikolta! Valokeilassa on nyt julkaistu tallenne otsikolla: {title}. 
-
-Tämä video on herättänyt valtavasti keskustelua kiekkofanin keskuudessa, sillä se pureutuu suoraan kaukalon kuumimpiin puheenaiheisiin, pelikieltoihin ja ottelutilanteisiin. Liigassa pelataan tällä hetkellä valtavilla panoksilla ja jokainen taklaus, rangaistus sekä kurinpitojohdon ratkaisu voi muuttaa tulevien otteluiden voimasuhteita merkittävästi. 
-
-Tässä videossa käydään läpi viralliset tilanteet ja ratkaisut aivan sekuntien ja minuuttien tarkkuudella. Jos haluat pysyä kartalla siitä, mitä kulissien takana ja kurinpitohuoneessa juuri nyt tapahtuu, klikkaa alla olevaa virallista linkkiä ja katso koko tilanne livenä!" """
+Tämä peli osoitti, että marraskuun pimeinä iltoina pisteet eivät irtoa helpolla. Voittaja otti henkisen yliotteen, ja hävinnyt joukkue joutuu palaamaan fläppitaulun ääreen miettimään puolustuspeliään uusiksi. Katso ottelun viralliset maalit, highlightsit ja ratkaisuhetket suoraan alta löytyvästä videolinkistä – tästä ei lätkä parane!" """
+    return käsikirjoitus
 
 def hae_uusimmat_liiga_videot():
     if not youtube:
         return []
+    
+    # Haetaan taustalle tuore uutisdata Liiga.fi-sivustolta
+    print("Haetaan uutta uutisdataa Liiga.fi sivustolta...")
+    liiga_data = hae_liigan_viralliset_uutiset()
+    
     try:
         request = youtube.search().list(
             part="snippet", channelId=LIIGA_CHANNEL_ID, maxResults=5, order="date", type="video"
@@ -68,13 +71,13 @@ def hae_uusimmat_liiga_videot():
                 video_id = item["id"]["videoId"]
                 kuvaus = item["snippet"].get("description", "")
                 
-                # Ajetaan video uuden älykkään käsikirjoitusgeneraattorin läpi
-                puheteksti = luo_aanitettava_selostus(title, kuvaus)
+                # Yhdistetään YouTube ja Liiga.fi tiedot pitkäksi selostukseksi
+                käsikirjoitus = luo_2min_radioselostus(title, kuvaus, liiga_data)
 
                 liiga_videot.append({
                     "otsikko": title,
                     "url": f"https://www.youtube.com/watch?v={video_id}",
-                    "juonto": puheteksti
+                    "juonto": käsikirjoitus
                 })
         return liiga_videot
     except Exception as e:
@@ -82,7 +85,7 @@ def hae_uusimmat_liiga_videot():
         return []
 
 def aja_automaatio():
-    print("Luodaan 2 minuutin äänitysvalmiita otteluselostuksia...")
+    print("Ajetaan yhdistetty YouTube + Liiga.fi automaatio...")
     videot = hae_uusimmat_liiga_videot()
     if not videot:
         print("Uusia videoita ei löytynyt.")
@@ -90,7 +93,7 @@ def aja_automaatio():
     try:
         with open('data.json', 'w', encoding='utf-8') as f:
             json.dump(videot, f, ensure_ascii=False, indent=4)
-        print("Valmista! data.json on päivitetty äänityskäsikirjoituksilla.")
+        print("Valmista! data.json päivitetty kaikilla tiedoilla.")
     except Exception as e:
         print(f"Virhe tallennuksessa: {e}")
 
