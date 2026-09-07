@@ -3,41 +3,134 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Liiga Tekoäly-Koosteet</title>
+    <title>Liiga-Koosteet Automaatilla</title>
     <style>
-        body { font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; background: #f4f4f9; }
-        .kortti { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); margin-bottom: 20px; }
-        h1 { color: #111; }
-        pre { white-space: pre-wrap; font-family: inherit; background: #f9f9f9; padding: 15px; border-radius: 5px; }
+        :root {
+            --primary: #002f6c;
+            --accent: #ff6b00;
+            --bg: #f4f7f6;
+            --text: #333;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            margin: 0;
+            padding: 0;
+        }
+        .header {
+            background-color: var(--primary);
+            color: white;
+            text-align: center;
+            padding: 40px 20px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 2.5rem;
+        }
+        .header p {
+            margin: 10px 0 0 0;
+            opacity: 0.8;
+        }
+        .container {
+            max-width: 900px;
+            margin: 40px auto;
+            padding: 0 20px;
+        }
+        .kortti {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            padding: 30px;
+            margin-bottom: 35px;
+            border-top: 5px solid var(--accent);
+            transition: transform 0.2s;
+        }
+        .kortti:hover {
+            transform: translateY(-2px);
+        }
+        .kortti h2 {
+            margin-top: 0;
+            color: var(--primary);
+            font-size: 1.6rem;
+        }
+        .nappi {
+            display: inline-block;
+            background-color: var(--accent);
+            color: white;
+            text-decoration: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            font-weight: bold;
+            margin-bottom: 20px;
+            font-size: 0.95rem;
+        }
+        .nappi:hover {
+            background-color: #e05e00;
+        }
+        .juonto-alue {
+            background: #f9fbfb;
+            border-left: 4px solid var(--primary);
+            padding: 20px;
+            border-radius: 4px;
+            line-height: 1.6;
+            font-size: 1.05rem;
+            white-space: pre-wrap;
+        }
+        #lataus {
+            text-align: center;
+            font-size: 1.2rem;
+            color: #666;
+            margin-top: 50px;
+        }
     </style>
 </head>
 <body>
 
-    <h1>🏒 Uusimmat Liiga-leikkeet & Juonnot</h1>
-    <div id="sisalto">Ladataan leikkeitä...</div>
+    <div class="header">
+        <h1>🏒 Liiga Tekoäly-Selostaja</h1>
+        <p>Automaattiset ottelukoosteet, juonnot ja aikaleimat suoraan Liigan viralliselta kanavalta</p>
+    </div>
+
+    <div class="container">
+        <div id="lataus">Ladataan uusimpia ottelukoosteita...</div>
+        <div id="sisalto"></div>
+    </div>
 
     <script>
-        // Haetaan Python-skriptin luoma data.json automaattisesti
+        // Ladataan Pythonin luoma data.json tiedosto
         fetch('data.json')
-            .then(response => response.json())
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Datan lataus epäonnistui');
+                }
+                return response.json();
+            })
             .then(data => {
-                const container = document.getElementById('sisalto');
-                container.innerHTML = ''; // Tyhjennetään latausteksti
+                const latausElementti = document.getElementById('lataus');
+                latausElementti.style.display = 'none'; // Piilotetaan latausteksti
                 
+                const container = document.getElementById('sisalto');
+                
+                if (data.length === 0) {
+                    container.innerHTML = '<p style="text-align:center;">Ei koosteita saatavilla juuri nyt.</p>';
+                    return;
+                }
+
                 data.forEach(leike => {
                     const div = document.createElement('div');
                     div.className = 'kortti';
                     div.innerHTML = `
                         <h2>${leike.otsikko}</h2>
-                        <p><a href="${leike.url}" target="_blank">➡️ Katso alkuperäinen video YouTubessa</a></p>
-                        <h3>Tekoälyn juonto & aikaleimat:</h3>
-                        <pre>${leike.juonto}</pre>
+                        <a href="${leike.url}" target="_blank" class="nappi">📺 Katso alkuperäinen video YouTubessa</a>
+                        <div class="juonto-alue">${leike.juonto}</div>
                     `;
                     container.appendChild(div);
                 });
             })
             .catch(err => {
-                document.getElementById('sisalto').innerText = 'Virhe ladattaessa koosteita.';
+                document.getElementById('lataus').innerText = 'Virhe ladattaessa koosteita. Varmista, että olet ajanut app.py skriptin ensin!';
                 console.error(err);
             });
     </script>
