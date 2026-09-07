@@ -1,24 +1,19 @@
 import os
 import json
-import requests
 from googleapiclient.discovery import build
 from huggingface_hub import InferenceClient
 
-# 1. API-avaimet suoraan koodissa
-YOUTUBE_API_KEY = "AIzaSyCzqFkntOh2A7ZaWfaCQPoeMU1V5DFh14k"
-HF_API_KEY = "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"
+# Haetaan avaimet turvallisesti GitHubin asetuksista (ympäristömuuttujista)
+YOUTUBE_API_KEY = os.environ.get("YOUTUBE_API_KEY")
+HF_API_KEY = os.environ.get("HF_API_KEY")
 
-# Käynnistetään YouTube-yhteys
 try:
     youtube = build('youtube', 'v3', developerKey=YOUTUBE_API_KEY)
 except Exception as e:
     print(f"Kriittinen virhe YouTube-yhteyden alustuksessa: {e}")
     youtube = None
 
-# Luodaan tekoälyasiakas
 client = InferenceClient(token=HF_API_KEY)
-
-# Liigan virallinen oma YouTube-kanava ID
 LIIGA_CHANNEL_ID = "UCGxrUE2U-ncnBf4vDww-gAQ" 
 
 def hae_uusimmat_liiga_videot():
@@ -38,10 +33,9 @@ def hae_uusimmat_liiga_videot():
             if "id" in item and "videoId" in item["id"]:
                 title = item["snippet"].get("title", "Liiga-video")
                 video_id = item["id"]["videoId"]
-                # KORJATTU: Oikea YouTube-osoitteen muotoilu (lisätty puuttuva vinoviiva)
                 liiga_videot.append({
                     "otsikko": title,
-                    "url": f"https://www.youtube.com/watch?v={video_id}",
+                    "url": f"https://youtube.com{video_id}",
                     "kuvaus": item["snippet"].get("description", "")
                 })
         return liiga_videot
@@ -62,8 +56,6 @@ def generoi_juonto_ilmaiseksi(video_url, videon_kuvaus):
 
     try:
         messages = [{"role": "user", "content": prompt}]
-        
-        # KORJATTU: Vaihdettu malliksi supervakaa Llama 3.2, joka tukee suoraan vapaata ilmaisrajapintaa
         response = client.chat.completions.create(
             model="meta-llama/Llama-3.2-3B-Instruct",
             messages=messages,
@@ -71,11 +63,11 @@ def generoi_juonto_ilmaiseksi(video_url, videon_kuvaus):
             temperature=0.7
         )
         if response and response.choices:
-            return response.choices[0].message.content.strip()
+            return response.choices.message.content.strip()
         return "Juonnon luominen epäonnistui: Tyhjä vastaus tekoälyltä."
     except Exception as e:
         print(f"Virhe tekoälyssä videolle {video_url}: {e}")
-        return f"Juonnon luominen epäonnistui teknisen virheen vuoksi."
+        return "Juonnon luominen epäonnistui teknisen virheen vuoksi."
 
 def aja_automaatio():
     print("Haetaan uusia Liiga-videoita...")
