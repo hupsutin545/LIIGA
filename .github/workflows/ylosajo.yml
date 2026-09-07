@@ -23,6 +23,9 @@ jobs:
         pip install google-api-python-client huggingface_hub
 
     - name: Ajetaan Liiga-skripti
+      env:
+        YOUTUBE_API_KEY: ${{ secrets.YOUTUBE_API_KEY }}
+        HF_API_KEY: ${{ secrets.HF_API_KEY }}
       run: python app.py
 
     - name: Tallennetaan uudet koosteet sivustolle
